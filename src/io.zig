@@ -14,8 +14,6 @@ pub const zcgltf = struct {
     const bindings = @import("zcgltf.zig");
     const Data = bindings.Data;
 
-    pub usingnamespace bindings;
-
     pub fn parseAndLoadFile(pathname: [:0]const u8) bindings.Error!*Data {
         const options = bindings.Options{
             .memory = .{
