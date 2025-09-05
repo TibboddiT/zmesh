@@ -248,7 +248,7 @@ pub const UvToPositionFn = *const fn (
     uv: *const [2]f32,
     position: *[3]f32,
     userdata: ?*anyopaque,
-) callconv(.C) void;
+) callconv(.c) void;
 
 pub fn initParametric(
     fun: UvToPositionFn,
@@ -461,17 +461,17 @@ test "zmesh.custom" {
     zmesh.init(std.testing.allocator);
     defer zmesh.deinit();
 
-    var positions = std.ArrayList([3]f32).init(std.testing.allocator);
-    defer positions.deinit();
-    try positions.append(.{ 0.0, 0.0, 0.0 });
-    try positions.append(.{ 1.0, 0.0, 0.0 });
-    try positions.append(.{ 1.0, 0.0, 1.0 });
+    var positions: std.ArrayList([3]f32) = .empty;
+    defer positions.deinit(std.testing.allocator);
+    try positions.append(std.testing.allocator, .{ 0.0, 0.0, 0.0 });
+    try positions.append(std.testing.allocator, .{ 1.0, 0.0, 0.0 });
+    try positions.append(std.testing.allocator, .{ 1.0, 0.0, 1.0 });
 
-    var indices = std.ArrayList(IndexType).init(std.testing.allocator);
-    defer indices.deinit();
-    try indices.append(0);
-    try indices.append(1);
-    try indices.append(2);
+    var indices: std.ArrayList(IndexType) = .empty;
+    defer indices.deinit(std.testing.allocator);
+    try indices.append(std.testing.allocator, 0);
+    try indices.append(std.testing.allocator, 1);
+    try indices.append(std.testing.allocator, 2);
 
     var shape = Shape.init(indices, positions, null, null);
     defer shape.deinit();
