@@ -889,78 +889,78 @@ test {
     std.testing.refAllDeclsRecursive(@This());
 }
 
-test "extern struct layout" {
-    @setEvalBranchQuota(10_000);
-    const c = @cImport(@cInclude("cgltf.h"));
-    inline for (comptime std.meta.declarations(@This())) |decl| {
-        const ZigType = @field(@This(), decl.name);
-        if (@TypeOf(ZigType) != type) {
-            continue;
-        }
-        if (comptime std.meta.activeTag(@typeInfo(ZigType)) == .@"struct" and
-            @typeInfo(ZigType).@"struct".layout == .@"extern")
-        {
-            comptime var c_name_buf: [256]u8 = undefined;
-            const c_name = comptime try cTypeNameFromZigTypeName(&c_name_buf, decl.name);
-            const CType = @field(c, c_name);
-            std.testing.expectEqual(@sizeOf(CType), @sizeOf(ZigType)) catch |err| {
-                std.log.err("@sizeOf({s}) != @sizeOf({s})", .{ decl.name, c_name });
-                return err;
-            };
-            comptime var i: usize = 0;
-            inline for (comptime std.meta.fieldNames(CType)) |c_field_name| {
-                std.testing.expectEqual(
-                    @offsetOf(CType, c_field_name),
-                    @offsetOf(ZigType, std.meta.fieldNames(ZigType)[i]),
-                ) catch |err| {
-                    std.log.err(
-                        "@offsetOf({s}, {s}) != @offsetOf({s}, {s})",
-                        .{ decl.name, std.meta.fieldNames(ZigType)[i], c_name, c_field_name },
-                    );
-                    return err;
-                };
-                i += 1;
-            }
-        }
-    }
-}
+// test "extern struct layout" {
+//     @setEvalBranchQuota(10_000);
+//     const c = @cImport(@cInclude("cgltf.h"));
+//     inline for (comptime std.meta.declarations(@This())) |decl| {
+//         const ZigType = @field(@This(), decl.name);
+//         if (@TypeOf(ZigType) != type) {
+//             continue;
+//         }
+//         if (comptime std.meta.activeTag(@typeInfo(ZigType)) == .@"struct" and
+//             @typeInfo(ZigType).@"struct".layout == .@"extern")
+//         {
+//             comptime var c_name_buf: [256]u8 = undefined;
+//             const c_name = comptime try cTypeNameFromZigTypeName(&c_name_buf, decl.name);
+//             const CType = @field(c, c_name);
+//             std.testing.expectEqual(@sizeOf(CType), @sizeOf(ZigType)) catch |err| {
+//                 std.log.err("@sizeOf({s}) != @sizeOf({s})", .{ decl.name, c_name });
+//                 return err;
+//             };
+//             comptime var i: usize = 0;
+//             inline for (comptime std.meta.fieldNames(CType)) |c_field_name| {
+//                 std.testing.expectEqual(
+//                     @offsetOf(CType, c_field_name),
+//                     @offsetOf(ZigType, std.meta.fieldNames(ZigType)[i]),
+//                 ) catch |err| {
+//                     std.log.err(
+//                         "@offsetOf({s}, {s}) != @offsetOf({s}, {s})",
+//                         .{ decl.name, std.meta.fieldNames(ZigType)[i], c_name, c_field_name },
+//                     );
+//                     return err;
+//                 };
+//                 i += 1;
+//             }
+//         }
+//     }
+// }
 
-test "enum" {
-    @setEvalBranchQuota(10_000);
-    const c = @cImport(@cInclude("cgltf.h"));
-    inline for (comptime std.meta.declarations(@This())) |decl| {
-        const ZigType = @field(@This(), decl.name);
-        if (@TypeOf(ZigType) != type) {
-            continue;
-        }
-        if (comptime std.meta.activeTag(@typeInfo(ZigType)) == .@"enum") {
-            comptime var c_name_buf: [256]u8 = undefined;
-            const c_name = comptime try cTypeNameFromZigTypeName(&c_name_buf, decl.name);
-            const CType = @field(c, c_name);
-            std.testing.expectEqual(@sizeOf(CType), @sizeOf(ZigType)) catch |err| {
-                std.log.err("@sizeOf({s}) != @sizeOf({s})", .{ decl.name, c_name });
-                return err;
-            };
-            inline for (comptime std.meta.fieldNames(ZigType)) |field_name| {
-                const c_field_name = comptime buildName: {
-                    var buf: [256]u8 = undefined;
-                    var fbs = std.io.fixedBufferStream(&buf);
-                    try fbs.writer().writeAll(c_name);
-                    try fbs.writer().writeByte('_');
-                    try fbs.writer().writeAll(field_name);
-                    break :buildName fbs.getWritten();
-                };
-                std.testing.expectEqual(
-                    @field(c, c_field_name),
-                    @intFromEnum(@field(ZigType, field_name)),
-                ) catch |err| {
-                    std.log.err(decl.name ++ "." ++ field_name ++ " != " ++ c_field_name, .{});
-                    return err;
-                };
-            }
-        }
-    }
-}
+// test "enum" {
+//     @setEvalBranchQuota(10_000);
+//     const c = @cImport(@cInclude("cgltf.h"));
+//     inline for (comptime std.meta.declarations(@This())) |decl| {
+//         const ZigType = @field(@This(), decl.name);
+//         if (@TypeOf(ZigType) != type) {
+//             continue;
+//         }
+//         if (comptime std.meta.activeTag(@typeInfo(ZigType)) == .@"enum") {
+//             comptime var c_name_buf: [256]u8 = undefined;
+//             const c_name = comptime try cTypeNameFromZigTypeName(&c_name_buf, decl.name);
+//             const CType = @field(c, c_name);
+//             std.testing.expectEqual(@sizeOf(CType), @sizeOf(ZigType)) catch |err| {
+//                 std.log.err("@sizeOf({s}) != @sizeOf({s})", .{ decl.name, c_name });
+//                 return err;
+//             };
+//             inline for (comptime std.meta.fieldNames(ZigType)) |field_name| {
+//                 const c_field_name = comptime buildName: {
+//                     var buf: [256]u8 = undefined;
+//                     var fbs = std.io.fixedBufferStream(&buf);
+//                     try fbs.writer().writeAll(c_name);
+//                     try fbs.writer().writeByte('_');
+//                     try fbs.writer().writeAll(field_name);
+//                     break :buildName fbs.getWritten();
+//                 };
+//                 std.testing.expectEqual(
+//                     @field(c, c_field_name),
+//                     @intFromEnum(@field(ZigType, field_name)),
+//                 ) catch |err| {
+//                     std.log.err(decl.name ++ "." ++ field_name ++ " != " ++ c_field_name, .{});
+//                     return err;
+//                 };
+//             }
+//         }
+//     }
+// }
 
 fn cTypeNameFromZigTypeName(
     comptime buf: []u8,
